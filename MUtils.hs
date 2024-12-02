@@ -3,7 +3,7 @@ module MUtils (
    runOnFile, runTestOnFile, runOnFileGroup,
    putList,putListToStr, split, splitOn, count, count2, countEqual, maxOn, minOn, unique, unique', uniqueOn, indexesWhere, replace, replace2, replace3, replaceIf, replaceIf2, replaceIf3, combinations, combinations3, combinationsSelf,
    (!!?), joinWith, zipWithIndexes, differences, indexes, zipF,
-   indexes2, zipWithIndexes2, empty2, empty3, setElement, setElement2, setElement3, changeElement, changeElement2, changeElement3, directions2D, directions3D, groupInto2D,
+   indexes2, zipWithIndexes2, empty2, empty3, setElement, setElement2, setElement3, changeElement, changeElement2, changeElement3, removeElement, removeElement2, removeElement3, directions2D, directions3D, groupInto2D,
    map2, map3, filter2, filter3, zip2d, zip3d, findIndex2,
    pair, pairS, tupleWith, mapFst, mapSnd, mapBoth, fst3, snd3, thd3, fst4, snd4, thd4, frh4, t2toList, t3toList, t4toList, t5toList, t2fromList, t3fromList, t4fromList, t5fromList,
    flattenMaybe, removeNothing,
@@ -217,6 +217,15 @@ changeElement2 i j f xs = (take j xs)++[changeElement i f (xs!!j)]++(drop (j+1) 
 
 changeElement3 :: Int -> Int -> Int -> (a->a) -> [[[a]]] -> [[[a]]]
 changeElement3 i j k f xs = (take k xs)++[changeElement2 i j f (xs!!k)]++(drop (k+1) xs)
+
+removeElement :: Int -> [a] -> [a]
+removeElement i xs = take i xs ++ drop (i+1) xs
+
+removeElement2 :: Int -> Int -> [[a]] -> [[a]]
+removeElement2 i j xs = take j xs ++[removeElement i (xs!!j)] ++drop (j+1) xs
+
+removeElement3 :: Int -> Int -> Int -> [[[a]]] -> [[[a]]]
+removeElement3 i j k xs = take k xs ++[removeElement2 i j (xs!!k)] ++drop (k+1) xs
 
 directions2D :: [(Int,Int)]
 directions2D = [(-1,-1), (0,-1), (1,-1), (-1,0), (1,0), (-1,1), (0,1), (1,1)]
