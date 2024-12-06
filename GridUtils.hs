@@ -1,4 +1,4 @@
-module GridUtils (gridFromList, neighbourMapO, neighbourMapD, neighbourMap, buildNeighbours, directionsO, directionsD, directionsO3, directionsD3,
+module GridUtils (gridFromList, getGridPosition, neighbourMapO, neighbourMapD, neighbourMap, buildNeighbours, directionsO, directionsD, directionsO3, directionsD3,
     getValue, changeValue, getNeighbours, addPoints,
     pointDistanceO, gridBounds, showCharGrid, showStringGrid, showGrid, showGrid1,
     simplePathO, simplePathO',
@@ -7,6 +7,7 @@ module GridUtils (gridFromList, neighbourMapO, neighbourMapD, neighbourMap, buil
 import MUtils
 import qualified Data.Map as Map
 import Data.List
+import Data.Maybe (isJust)
 
 type Point = (Int, Int)
 type Point3 = (Int, Int, Int)
@@ -17,6 +18,9 @@ type NeighbourMap a = Map.Map Point (a, [(Point, a)])
 
 gridFromList :: [[a]] -> Grid a
 gridFromList ass = zipWithIndexes ass |> map (\(as,y) -> zipWithIndexes as |> map (\(a,x) -> Map.singleton (x,y) a)) |> concat |> Map.unions
+
+getGridPosition :: Eq a => Grid a -> a -> Maybe Point
+getGridPosition g x = Map.foldrWithKey (\p a r-> if isJust r then r else if a==x then Just p else Nothing) Nothing g
 
 neighbourMapO :: Grid a -> NeighbourMap a
 neighbourMapO = neighbourMap directionsO
@@ -98,18 +102,18 @@ data Dir = East | West | North | South
     deriving ( Show, Read, Eq, Ord )
 
 --Rotates a direction clockwise
-rotateDirC :: Dir -> Dir
-rotateDirC North = West
-rotateDirC South = East
-rotateDirC East = North
-rotateDirC West = South
+rotateDirA :: Dir -> Dir
+rotateDirA North = West
+rotateDirA South = East
+rotateDirA East = North
+rotateDirA West = South
 
 --Rotates a direction antilockwise
-rotateDirA :: Dir -> Dir
-rotateDirA North = East
-rotateDirA South = West
-rotateDirA West = North
-rotateDirA East = South
+rotateDirC :: Dir -> Dir
+rotateDirC North = East
+rotateDirC South = West
+rotateDirC West = North
+rotateDirC East = South
 
 --Flips a directions
 flipDir :: Dir -> Dir
