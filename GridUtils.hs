@@ -1,5 +1,5 @@
 module GridUtils (gridFromList, getGridPosition, neighbourMapO, neighbourMapD, neighbourMap, buildNeighbours, directionsO, directionsD, directionsO3, directionsD3,
-    getValue, changeValue, getNeighbours, addPoints,
+    getValue, changeValue, getNeighbours, addPoints, mulPoint,
     pointDistanceO, gridBounds, showCharGrid, showStringGrid, showGrid, showGrid1,
     simplePathO, simplePathO',
     rotateDirC, rotateDirA, flipDir, moveDir, stepDir, deflectDir, followDirPath, dirToPoint, pointToDirs, isHorizontal, isVertical,
@@ -39,6 +39,9 @@ hasNeighbour p (x,y) m = m Map.! (x,y) |> snd |> map snd |> filter p |> length |
 
 addPoints :: Num a => (a,a) -> (a,a) -> (a,a)
 addPoints (x1,y1) (x2,y2) = (x1+x2, y1+y2)
+
+mulPoint :: Num a => a -> (a,a) -> (a,a)
+mulPoint n (x,y) = (x*n, y*n)
 
 getValue :: NeighbourMap a -> Point -> a
 getValue ngrid point = ngrid Map.! point |> fst
