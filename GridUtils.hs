@@ -1,13 +1,15 @@
-module GridUtils (gridFromList, getGridPosition, neighbourMapO, neighbourMapD, neighbourMap, buildNeighbours, directionsO, directionsD, directionsO3, directionsD3,
-    getValue, changeValue, getNeighbours, addPoints, mulPoint,
-    pointDistanceO, gridBounds, showCharGrid, showStringGrid, showGrid, showGrid1,
+module GridUtils (gridFromList, gridFromNeighbourMap, getGridPosition, neighbourMapO, neighbourMapD, neighbourMap, buildNeighbours, directionsO, directionsD, directionsO3, directionsD3,
+    getValue, changeValue, changeAllValues, updateNeighbour, getNeighbours, addPoints, mulPoint,
+    pointDistanceO, getConnected, gridBounds, showCharGrid, showStringGrid, showGrid, showGrid1,
     simplePathO, simplePathO',
-    rotateDirC, rotateDirA, flipDir, moveDir, stepDir, deflectDir, followDirPath, dirToPoint, pointToDirs, isHorizontal, isVertical,
+    allDirs, rotateDirC, rotateDirA, flipDir, moveDir, stepDir, deflectDir, followDirPath, dirToPoint, pointToDirs, isHorizontal, isVertical,
     Grid, NeighbourMap, Point, Point3, Dir (East, West , North , South)) where
 import MUtils
 import qualified Data.Map as Map
+import qualified Data.Set as Set
 import Data.List
 import Data.Maybe (isJust)
+import Data.Bifunctor ( Bifunctor(bimap) )
 
 type Point = (Int, Int)
 type Point3 = (Int, Int, Int)
@@ -18,6 +20,9 @@ type NeighbourMap a = Map.Map Point (a, [(Point, a)])
 
 gridFromList :: [[a]] -> Grid a
 gridFromList ass = zipWithIndexes ass |> map (\(as,y) -> zipWithIndexes as |> map (\(a,x) -> Map.singleton (x,y) a)) |> concat |> Map.unions
+
+gridFromNeighbourMap :: NeighbourMap a -> Grid a
+gridFromNeighbourMap = Map.map fst
 
 getGridPosition :: Eq a => Grid a -> a -> Maybe Point
 getGridPosition g x = Map.foldrWithKey (\p a r-> if isJust r then r else if a==x then Just p else Nothing) Nothing g
@@ -46,8 +51,14 @@ mulPoint n (x,y) = (x*n, y*n)
 getValue :: NeighbourMap a -> Point -> a
 getValue ngrid point = ngrid Map.! point |> fst
 
-changeValue :: (a->a) -> Point -> NeighbourMap a -> NeighbourMap a --TODO: this doesn't update the nieghbours
-changeValue f point = Map.adjust (mapFst f) point
+changeValue :: (a->a) -> Point -> NeighbourMap a -> NeighbourMap a
+changeValue f point ngrid = foldr (\p newMap-> updateNeighbour newMap (fst p) point) (Map.adjust (mapFst f) point ngrid) (getNeighbours ngrid point)
+
+updateNeighbour :: NeighbourMap a -> Point -> Point -> NeighbourMap a -- Updates the neighbour n of point s
+updateNeighbour ngrid s n = ngrid Map.! s |> mapSnd (map (\(p,v)-> if p==n then (p, ngrid Map.! p |> fst) else (p,v))) |>  \newValue-> Map.insert s newValue ngrid
+
+changeAllValues :: (a->b) -> NeighbourMap a -> NeighbourMap b
+changeAllValues f = Map.map (bimap f (map (mapSnd f)))
 
 getNeighbours :: NeighbourMap a -> Point -> [(Point, a)]
 getNeighbours ngrid point = ngrid Map.! point |> snd
@@ -98,11 +109,21 @@ simplePathO' p1@(x1,y1) p2@(x2,y2)
     | x1>x2            = p1 : simplePathO' (x1-1, y1) p2
     | x1<x2            = p1 : simplePathO' (x1+1, y1) p2
 
+getConnected :: NeighbourMap a -> (a->Bool) -> Point -> [Point]
+getConnected ngrid pr p = getConnected' ngrid pr [p] Set.empty |> Set.toList
+
+getConnected' :: NeighbourMap a -> (a->Bool) -> [Point] -> Set.Set Point -> Set.Set Point
+getConnected' g pr [] visited = visited
+getConnected' g pr (next:frontier) visited = getConnected' g pr (uniqueSet (frontier++newNodes)) (Set.insert next visited) where
+    newNodes = getNeighbours g next |> filter (pr . snd) |> map fst |> filter (`Set.notMember` visited)
 
 ---------- Dir stuff ----------
 
 data Dir = East | West | North | South
     deriving ( Show, Read, Eq, Ord )
+
+allDirs :: [Dir]
+allDirs = [East, West, North, South]
 
 --Rotates a direction clockwise
 rotateDirA :: Dir -> Dir

@@ -1,7 +1,7 @@
 -- Version 1.0.6
 module MUtils (
    runOnFile, runTestOnFile, runOnFileGroup,
-   putList,putListToStr, split, splitOn, count, count2, countEqual, maxOn, minOn, unique, unique', uniqueOn, indexesWhere, replace, replace2, replace3, replaceIf, replaceIf2, replaceIf3, combinations, combinations3, combinationsSelf,
+   putList,putListToStr, split, splitOn, count, count2, countEqual, maxOn, minOn, uniqueSet, unique, unique', uniqueOn, indexesWhere, replace, replace2, replace3, replaceIf, replaceIf2, replaceIf3, combinations, combinations3, combinationsSelf,
    (!!?), joinWith, zipWithIndexes, differences, indexes, zipF,
    indexes2, zipWithIndexes2, empty2, empty3, setElement, setElement2, setElement3, changeElement, changeElement2, changeElement3, removeElement, removeElement2, removeElement3, directions2D, directions3D, groupInto2D,
    map2, map3, filter2, filter3, zip2d, zip3d, findIndex2,
@@ -100,7 +100,10 @@ minOn f [x] = x
 minOn f (x:xs) = if f x <= f best then x else best where best = maxOn f xs
 
 ----- Filtering -----
---Removes duplicates from a list
+uniqueSet :: Ord a  => [a] -> [a]
+uniqueSet xs = Set.fromList xs |> Set.toList
+
+--Removes duplicates from a list, preserving order
 unique :: Eq a  => [a] -> [a]
 unique xs = xs |> reverse |> unique' |> reverse
 
