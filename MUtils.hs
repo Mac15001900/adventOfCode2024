@@ -9,7 +9,7 @@ module MUtils (
    flattenMaybe, removeNothing,
    repeatF, repeatUntil, examine, examineStr, examineRepeat,
    factorial, (//), nck, valueBetween, mean, meanI, sign,
-   aStar, bfsAllCosts, memoizedCount, (|>), readInt
+   aStar, tryAStar, bfsAllCosts, memoizedCount, (|>), readInt
     ) where
 
 import Control.Monad
