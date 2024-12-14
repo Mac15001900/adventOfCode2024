@@ -1,33 +1,28 @@
-import           Data.List
 import           Data.Maybe ( catMaybes )
-
-import           GridUtils  ( Point, addPoints )
-
 import           MUtils
 
+type Point = (Rational, Rational)
 type Target = Point
-
 type Button = Point
-
 type Machine = (Button, Button, Target)
 
---Cheks if a target is potentially rechable from a point (not all valid targets are reachable; all invalid ones aren't)
-isValid :: Machine -> Point -> Bool
--- isValid ((dx1, dy1), (dx2, dy2), (tx, ty)) (px, py) = px <= tx && py <= ty && valueBetween ([ dy1 // dx1, dy2 // dx1 ] |> sort |> t2fromList) ((ty - py) // (tx - px)) --There's a mistake in here :/
-isValid ((dx1, dy1), (dx2, dy2), (tx, ty)) (px, py) = px <= tx && py <= ty --This is less efficient but still works
-
---tryAStar :: Ord a => (a->[(a, Int)]) -> (a->Int) -> a -> (a->Bool) -> Maybe Int
-stepsFrom :: Machine -> Point -> [(Point, Int)]
-stepsFrom m@(b1, b2, t) p = [ (addPoints b1 p, 3), (addPoints b2 p, 1) ] |> filter (isValid m . fst)
-
-heuristic :: Machine -> Point -> Int
-heuristic ((dx1, dy1), (dx2, dy2), (tx, ty)) (px, py) = (tx - px + ty - py) `div` max ((dx1 + dy1) `div` 3 + 1) (dx2 + dy2)
-
 parseMachine :: [String] -> Machine
-parseMachine s = map (split (`elem` "+=,")) s |> map (\s' -> (s' !! 1, s' !! 3) |> mapBoth readInt) |> t3fromList
+parseMachine s = map (split (`elem` "+=,")) s |> map (\s' -> (s' !! 1, s' !! 3) |> mapBoth readInt) |> map (mapBoth fromIntegral) |> t3fromList
+
+solve :: Machine -> Maybe Int
+solve ((ax, ay), (bx, by), (tx, ty)) = if isNat a && isNat b then Just (3 * floor a + floor b) else Nothing
+  where
+    b = (ty - (tx * ay) / ax) / (by - (bx * ay) / ax)
+    a = (tx - b * bx) / ax
+
+isNat :: Rational -> Bool
+isNat a = properFraction a |> snd |> (== 0)
 
 part1 :: [String] -> Int
-part1 s = splitOn "" s |> map parseMachine |> map (\m -> tryAStar (stepsFrom m) (const 0) (0, 0) (== thd3 m)) |> catMaybes |> sum
+part1 s = splitOn "" s |> map parseMachine |> map solve |> catMaybes |> sum
+
+part2 :: [String] -> Int
+part2 s = splitOn "" s |> map parseMachine |> map (\(a, b, (tx, ty)) -> (a, b, (tx + 10000000000000, ty + 10000000000000))) |> map solve |> catMaybes |> sum
 
 test = [ "Button A: X+94, Y+34"
        , "Button B: X+22, Y+67"
