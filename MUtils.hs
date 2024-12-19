@@ -1,8 +1,8 @@
--- Version 1.0.6
+-- Version 1.0.7
 module MUtils (
    runOnFile, runTestOnFile, runOnFileGroup,
    putList,putListToStr, split, splitOn, count, count2, countEqual, maxOn, minOn, uniqueSet, unique, unique', uniqueOn, indexesWhere, replace, replace2, replace3, replaceIf, replaceIf2, replaceIf3, combinations, combinations3, combinationsSelf,
-   (!!?), joinWith, zipWithIndexes, differences, indexes, zipF,
+   (!!?), joinWith, zipWithIndexes, differences, indexes, zipF, binarySearch,
    indexes2, zipWithIndexes2, empty2, empty3, setElement, setElement2, setElement3, changeElement, changeElement2, changeElement3, removeElement, removeElement2, removeElement3, directions2D, directions3D, groupInto2D,
    map2, map3, filter2, filter3, zip2d, zip3d, findIndex2,
    pair, pairS, tupleWith, mapFst, mapSnd, mapBoth, fst3, snd3, thd3, fst4, snd4, thd4, frh4, t2toList, t3toList, t4toList, t5toList, t2fromList, t3fromList, t4fromList, t5fromList,
@@ -184,6 +184,12 @@ differences a = zip (tail a) (init a) |>  map (uncurry (-))
 
 zipF :: (a->b) -> [a] -> [(a,b)]
 zipF f xs = zip xs (map f xs)
+
+--For a given range of integers, which can be divided into two ranges, such that the second one matches a predicate, returns the start of that second range
+binarySearch :: Integral i => (i->Bool) -> (i,i) -> i
+binarySearch p (x,y) | x==y = x
+   | p (x + (y-x) `div` 2) = binarySearch p (x, x + (y-x) `div` 2)
+   | otherwise =  binarySearch p (x + (y-x) `div` 2 + 1, y)
 
 
 ------------------------------------ Higher-dimension List Utils ------------------------------------
