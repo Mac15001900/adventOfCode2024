@@ -1,6 +1,6 @@
 module GridUtils (gridFromList, gridFromNeighbourMap, getGridPosition, neighbourMapO, neighbourMapD, neighbourMap, buildNeighbours, directionsO, directionsD, directionsO3, directionsD3,
     getValue, changeValue, changeAllValues, updateNeighbour, getNeighbours, addPoints, mulPoint,
-    pointDistanceO, getConnected, gridBounds, showCharGrid, showStringGrid, showGrid, showGrid1,
+    pointDistanceO, getConnected, gridBounds, allPointsInRangeO, showCharGrid, showStringGrid, showGrid, showGrid1,
     simplePathO, simplePathO',
     allDirs, rotateDirC, rotateDirA, flipDir, moveDir, stepDir, deflectDir, followDirPath, dirToPoint, pointToDirs, isHorizontal, isVertical,
     Grid, NeighbourMap, Point, Point3, Dir (East, West , North , South)) where
@@ -81,6 +81,10 @@ pointDistanceO (x1,y1) (x2,y2) = abs (x1-x2) + abs (y1-y2)
 gridBounds :: Grid a -> (Int,Int)
 gridBounds g = (map fst g' |> map fst |> maximum, map fst g' |> map snd |> maximum) where g' = Map.toList g
 
+allPointsInRangeO :: Grid a -> Int -> Point -> [Point]
+allPointsInRangeO g r p = [-r..r] |> map (\dx-> let yMax = r - abs dx in [-yMax .. yMax] |> map (pair dx)) |> concat |> map (addPoints p) |> filter (`Map.member` g) |> filter (/=p)
+
+
 showCharGrid :: Grid Char -> [String]
 showCharGrid g = [0..maxY] |> map (\y-> [0..maxX] |> map (\x-> g Map.! (x,y))) where
     (maxX, maxY) = gridBounds g
@@ -94,6 +98,7 @@ showGrid g = Map.map show g |> showStringGrid
 
 showGrid1 :: Show a => Grid a -> [String]
 showGrid1 g = Map.map (head . show) g |> showCharGrid
+
 
 --Pathfinding
 
